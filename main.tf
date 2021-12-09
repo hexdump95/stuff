@@ -11,7 +11,7 @@ provider "google" {
 }
 
 resource "google_container_cluster" "cluster" {
-  name     = "cluster-0"
+  name     = var.cluster_name
   location = var.zone
 
   remove_default_node_pool = true
@@ -23,13 +23,13 @@ resource "google_container_cluster" "cluster" {
 }
 
 resource "google_container_node_pool" "node_pool" {
-  name       = "node-pool"
+  name       = var.node_pool_name
   location   = var.zone
   cluster    = google_container_cluster.cluster.name
   node_count = var.num_nodes
 
   node_config {
-    machine_type = "e2-medium"
+    machine_type = var.machine_type
 
     service_account = google_service_account.service_account.email
     oauth_scopes    = var.oauth_scopes
@@ -38,11 +38,11 @@ resource "google_container_node_pool" "node_pool" {
 }
 
 resource "google_compute_global_address" "static_ip" {
-  name = "frontend-ip"
+  name = var.global_address_name
 }
 
-resource "google_dns_record_set" "subdomain" {
-  name         = "k8s.${var.dns_name}."
+resource "google_dns_record_set" "record" {
+  name         = "${var.subdomain_name}.${var.domain_name}."
   managed_zone = var.dns_zone_name
   type         = "A"
   ttl          = 300
